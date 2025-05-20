@@ -1,65 +1,183 @@
-# Infra Challenge 20240202
+# DevOps Challenge
 
 ## Introdução
 
-Este é um teste para que possamos ver as suas habilidades como DevOps.
+Este projeto foi desenvolvido como parte de um desafio técnico com o objetivo de demonstrar habilidades práticas em DevOps, incluindo:
 
-Nesse teste você deverá configurar um servidor, aplicar os principais recursos de segurança e trabalhar com Infra as Code
+- Provisionamento de infraestrutura na AWS usando **Terraform**
+- Configuração automatizada com **Ansible**
+- Deploy de aplicação web estática via **Nginx**
+- Implementação de uma **pipeline de entrega contínua** com **GitHub Actions**
+- Aplicação de boas práticas de **segurança, monitoramento e performance**
 
-[SPOILER] As instruções de entrega e apresentação do challenge estão no final deste Readme (=
+---
 
-### Antes de começar
- 
-- Considere como deadline da avaliação a partir do início do teste. Caso tenha sido convidado a realizar o teste e não seja possível concluir dentro deste período, avise a pessoa que o convidou para receber instruções sobre o que fazer.
-- Documentar todo o processo de investigação para o desenvolvimento da atividade (README.md no seu repositório); os resultados destas tarefas são tão importantes do que o seu processo de pensamento e decisões à medida que as completa, por isso tente documentar e apresentar os seus hipóteses e decisões na medida do possível.
+## Tecnologias Utilizadas
 
+- **AWS EC2** (Ubuntu 22.04 LTS)
+- **Terraform**
+- **Ansible**
+- **Nginx**
+- **GitHub Actions**
+- **Elastic IP**
+- **UFW / Fail2Ban**
+- **CloudWatch** (monitoramento)
+- **Bash / Shell Script**
 
-## **Parte 1 - Configuração do Servidor**
+---
 
-A sua tarefa consiste em configurar um servidor baseado na nuvem e instalar e configurar alguns componentes básicos.
+## Provisionamento com Terraform
 
+- Criação de instância EC2 Ubuntu 22.04
+- Associação a um **Elastic IP** para IP fixo
+- Configuração de **Security Group** permitindo portas 22 (SSH) e 80 (HTTP)
 
-1. Configurar grupo de segurança na AWS
-2. Configuração da redes para o Servidor
-3. Configurar um servidor AWS (recomenda-se o freetier) executando uma versão Ubuntu LTS.
-4. Instalar e configurar qualquer software que você recomendaria em uma configuração de servidor padrão sob as perspectivas de segurança, desempenho, backup e monitorização.
-5. Instalar e configurar o nginx para servir uma página web HTML estática.
+### Execução:
 
+```bash
+cd terraform
+terraform init
+terraform apply -auto-approve
+```
 
+> O IP da instância será exibido no output do Terraform e utilizado pelo Ansible.
 
-## **Part 2 – Infra as Code**
+---
 
-Como diferencial, você poderá configurar toda a infra-estrutura com ferramentas como:
+## Configuração com Ansible
 
-- Ansible
-- Terraform
-- AWS CDK ou CloudFormation
+O Ansible realiza as seguintes tarefas:
 
-Ao ter o projeto executando em um servidor e aplicando as melhores práticas de segurança com grupos de segurança e as configurações de rede criando completamente por código.
+- Atualização do sistema
+- Instalação do Nginx
+- Deploy da página HTML estática
+- Habilitação de UFW (firewall) com regras seguras
+- Instalação do Fail2Ban para proteção contra brute force via SSH
 
+### Execução:
 
-## **Part 3 – Continuous Delivery**
+```bash
+cd ansible
+ansible-playbook -i inventory playbook.yml
+```
 
-Desenhar e construir uma pipeline para apoiar a entrega contínua da aplicação de monitorização construída na Parte 2 no servidor configurado na Parte 1. Descrever a pipeline utilizando um diagrama de fluxo e explicar o objetivo e o processo de seleção usado em cada uma das ferramentas e técnicas específicas que compõem a sua pipeline. 
+---
 
-## Readme do Repositório
+## Deploy Web
 
-- Deve conter o título do projeto
-- Uma descrição sobre o projeto em frase
-- Deve conter uma lista com linguagem, framework e/ou tecnologias usadas
-- Como instalar e usar o projeto (instruções)
-- Não esqueça o [.gitignore](https://www.toptal.com/developers/gitignore)
-- Se está usando github pessoal, referencie que é um challenge by coodesh:  
+Após o provisionamento e configuração, acesse:
 
->  This is a challenge by [Coodesh](https://coodesh.com/)
+```
+http://54.221.123.45
+```
 
-## Finalização e Instruções para a Apresentação
+Você verá a mensagem: `Deploy realizado com sucesso!`
 
-1. Adicione o link do repositório com a sua solução no teste
-2. Verifique se o Readme está bom e faça o commit final em seu repositório;
-3. Envie e aguarde as instruções para seguir. Caso o teste tenha apresentação de vídeo, dentro da tela de entrega será possível gravar após adicionar o link do repositório. Sucesso e boa sorte. =)
+> Obs.: O endereço Ip esta desativado no momento.
 
+---
 
-## Suporte
+## Continuous Delivery com GitHub Actions
 
-Para tirar dúvidas sobre o processo envie uma mensagem diretamente a um especialista no chat da plataforma. 
+### Pipeline automatizada:
+
+- Executa em cada `push` na branch `main`
+- Etapas:
+  1. Provisiona infraestrutura via Terraform
+  2. Executa o Ansible com inventário dinâmico
+  3. Faz deploy da aplicação automaticamente
+
+### Local:
+`.github/workflows/deploy.yml`
+
+### Variáveis de ambiente (GitHub Secrets):
+
+| Variável                | Descrição                            |
+|-------------------------|--------------------------------------|
+| `AWS_ACCESS_KEY_ID`     | Chave de acesso IAM                  |
+| `AWS_SECRET_ACCESS_KEY` | Chave secreta IAM                    |
+| `AWS_REGION`            | Região AWS                           |
+| `TF_VAR_key_name`       | Nome da chave SSH (.pem) na AWS      |
+| `PRIVATE_KEY`           | Conteúdo da chave SSH `.pem`         |
+| `ANSIBLE_HOST`          | IP público fixo (Elastic IP)         |
+
+#### Diagrama de fluxo da pipeline
+
+```mermaid
+graph TD
+  A[Push para branch main] --> B[Execução do workflow GitHub Actions]
+  B --> C[Job Terraform: Provisionar infraestrutura na AWS]
+  C --> D[Job Ansible: Configurar servidor remoto via SSH]
+  D --> E[Deploy da aplicação estática com Nginx]
+  E --> F[Aplicação disponível via Elastic IP]
+```
+
+---
+
+### Como Usar
+
+1. Configure os **Secrets** no repositório GitHub
+2. Faça `push` na branch `main`
+3. O pipeline executará provisionamento e deploy automaticamente
+4. Acesse a aplicação via Elastic IP no navegador
+
+---
+
+ ### Ferramentas e Técnicas Usadas na Pipeline
+
+#### GitHub Actions
+
+* **Função:** Automatizar o fluxo de deploy
+* **Motivo da escolha:** Integração nativa com GitHub e suporte a secrets
+
+#### Terraform
+
+* **Função:** Provisionar a infraestrutura na AWS
+* **Motivo da escolha:** Infraestrutura versionável e amplamente usada
+
+#### Ansible
+
+* **Função:** Configurar o servidor automaticamente
+* **Motivo da escolha:** Simples, idempotente e fácil de manter
+
+#### Secrets do GitHub
+
+* **Função:** Armazenar credenciais com segurança
+* **Secrets usados:** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `TF_VAR_key_name`, `PRIVATE_KEY`, `ANSIBLE_HOST`
+
+---
+
+### Objetivo da Pipeline
+
+Padronizar e automatizar o deploy completo da aplicação de forma segura e reprodutível, garantindo:
+
+* Escalabilidade
+* Segurança com uso de chaves e firewall
+* Facilidade de manutenção e entrega contínua
+
+---
+
+## Boas Práticas de Segurança Aplicadas
+
+- **Firewall UFW** com regras explícitas
+- **Fail2Ban** configurado para proteger o SSH
+- **Acesso via chave SSH** (sem senha)
+- **Atualizações automáticas do sistema**
+- **Logs configurados para monitoramento via CloudWatch**
+
+---
+
+## Desafios Encontrados e Soluções
+
+### Problema: IP da EC2 mudando a cada `terraform apply`
+- **Solução:** Uso de Elastic IP para manter IP fixo e permitir deploy automático com Ansible
+
+### Problema: Erro de permissão na chave SSH
+- **Solução:** Garantir `chmod 400` e correto uso da chave via secrets no GitHub
+
+### Problema: Ansible falhando ao conectar
+- **Solução:** Adição dinâmica do IP no `inventory` gerado automaticamente pelo workflow
+
+---
+
+>  This is a challenge by **[Coodesh](https://coodesh.com/)**
