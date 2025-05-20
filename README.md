@@ -143,7 +143,7 @@ graph TD
 #### Secrets do GitHub
 
 * **Função:** Armazenar credenciais com segurança
-* **Secrets usados:** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `TF_VAR_key_name`, `PRIVATE_KEY`, `ANSIBLE_HOST`
+* **Secrets usados:** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` `TF_VAR_key_name`, `PRIVATE_KEY`, `ANSIBLE_HOST`
 
 ---
 
