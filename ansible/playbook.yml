@@ -1,0 +1,16 @@
+- hosts: web
+  become: yes
+  tasks:
+    - name: Atualiza pacotes
+      apt:
+        update_cache: yes
+
+    - name: Instala Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Copia index.html
+      copy:
+        src: ../nginx/index.html
+        dest: /var/www/html/index.html
