@@ -1,2 +1,2 @@
 [web]
-Ip_Publico ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/desafiokey.pem
+54.221.123.45 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/desafiokey.pem
