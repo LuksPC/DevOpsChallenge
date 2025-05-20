@@ -1,0 +1,5 @@
+*.tfstate
+*.pem
+host_ip.txt
+__pycache__/
+*.log
